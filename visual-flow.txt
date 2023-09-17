@@ -1,0 +1,103 @@
++-------------------+
+|                   |
+|  External Trigger |
+|   (e.g., CRON,    |
+|    REST call)     |
+|                   |
++---------+---------+
+          |
+          v
++---------+---------+
+|                   |
+|   JobLauncher     |
+|                   |
++---------+---------+
+          |
+          | JobParameters (filePath, currentDate, ...)
+          v
++---------+---------+
+|                   |
+|      Job           |
+|                   |
++----+----+-----+----+
+    |    |     |
+    v    v     v
++---+--+ +--+--+ +----+---+
+|      | |      | |        |
+| Step1 | | Step2 | | Step3   |
+|      | |      | |        |
+|      | |      | |        |
++----+  +---+  +----+
+    |        |      |
+    v        v      v
++---+---+ +---+---+ +---+---+
+|       | |       | |       |
+| Reader | | Reader | | Reader |
+|       | |       | |       |
++----+  +---+  +----+
+    |        |      |
+    v        v      v
++---+---+ +---+---+ +---+---+
+|       | |       | |       |
+|Processor| |Processor| |Processor|
+|       | |       | |       |
++----+  +---+  +----+
+    |        |      |
+    v        v      v
++---+---+ +---+---+ +---+---+
+|       | |       | |       |
+| Writer | | Writer | | Writer |
+|       | |       | |       |
++-------+ +-------+ +-------+
+
+
+
+
+
+
+
+
+
+
+
+
++--------------------+
+|                    |
+|  Kafka Topic Event |
+|                    |
++---------+----------+
+          |
+          v
++---------+----------+
+|                    |
+|  FileJobStarter    |
+|                    |
++---------+----------+
+          |
+          | (JobParameters: query, outputPath, indexName, ...)
+          v
++---------+----------+
+|                    |
+| SensAIBulkSearch   |
+|   (Spring Batch    |
+|     Job & Step)    |
+|                    |
++----+----+-----+----+
+    |    |     |
+    v    v     v
++---+--+ +--+--+ +----+---+
+|      | |      | |        |
+|      | |      | |        |
+|      | |      | |        |
++----+  +---+  +----+
+    |        |      |
+    v        v      v
++---+---+ +---+---+ +---+---+
+|       | |       | |       |
+|OpenSearch|OpenSearch|OpenSearch|
+|  Item   |  Item   |  Item   |
+| Reader  |Processor| Writer  |
+| (from  | (from  | (from   |
+|opensearchjobstarter)|SensAIBulkSearch|opensearchjobstarter)|
+|       | |       | |       |
++-------+ +-------+ +-------+

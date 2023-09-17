@@ -82,6 +82,36 @@ public class OpenSearchItemReader implements ItemReader<String> {
         }
     }
 }
+
+package com.yourcompany.starter.opensearch.batch;
+
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.StepScope;
+import org.springframework.stereotype.Component;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.List;
+
+@Component
+@StepScope
+public class OpenSearchCsvItemWriter implements ItemWriter<String> {
+
+    @Value("#{jobParameters['outputPath']}")
+    private String csvFilePath;
+
+    @Override
+    public void write(List<? extends String> items) throws Exception {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFilePath, true))) {
+            for (String item : items) {
+                writer.write(item);
+                writer.newLine();
+            }
+        }
+    }
+}
+
 ```
 
 ### 3. spring.factories

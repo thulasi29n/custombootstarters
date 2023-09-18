@@ -1,0 +1,23 @@
+Apologies for the oversight. The hydration of the state store happens in step 4 when the Kafka Streams application processes the `enriched_topic` and updates its internal state. Here's a clearer breakdown:
+
+1. Prepare the data for the new field.
+2. Evolve the Avro schema and register it (if using Schema Registry).
+3. Create an enrichment stream:
+   - Consume from the original topic.
+   - Enrich records with the new field.
+   - Produce enriched records to a new topic (`enriched_topic`).
+4. Modify Kafka Streams application:
+   - Consume from `enriched_topic`.
+   - Update processing logic for the new field.
+5. Hydrate the state store:
+   - As the modified Kafka Streams application processes the `enriched_topic`, it will update (or hydrate) its internal state store with the enriched data.
+6. (Optional) Ensure application handles a mix of old and new records.
+7. Transition:
+   - Stop the old Kafka Streams app (if necessary).
+   - Start the new Kafka Streams app.
+   - Switch consumers to use the updated state store.
+8. Test the process in a staging environment.
+9. Monitor the new Kafka Streams application and state store.
+10. (Optional) Clean up old records or compact the original topic.
+
+Again, during this process, the state store gets updated as the new Kafka Streams application processes the enriched records from the `enriched_topic`.

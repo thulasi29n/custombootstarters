@@ -1,0 +1,57 @@
+It seems you're using Datadog (as inferred from `dd-agent.jar`) and wish to visualize specific Kafka Streams metrics in Datadog's monitoring system (DSM - Datadog Service Monitoring).
+
+When you mention seeing JMX details in `jvisualvm`, it suggests that the JMX metrics are being properly exposed by your application. However, to see these metrics in Datadog, you need to ensure that Datadog's JMX fetcher is correctly configured to pull these metrics and send them to Datadog.
+
+Here are the steps you'd typically follow:
+
+### 1. Configure Datadog Agent for JMX:
+
+Ensure you have the Datadog Agent installed and running on your Kafka Streams application host. For the agent to fetch JMX metrics:
+
+1. The `jmx` integration should be enabled in the Datadog Agent.
+2. You need to create a configuration file for the JMX metrics you're interested in. This might be named `kafka.yaml` and placed in the Datadog Agent's conf.d directory (`/etc/datadog-agent/conf.d/` for many installations). 
+
+A sample `kafka.yaml` might look like:
+```yaml
+init_config:
+
+instances:
+  - host: localhost  # or the host exposing the JMX metrics
+    port: 9999  # JMX port
+    name: kafka_instance
+    user: <USERNAME>  # if JMX requires authentication
+    password: <PASSWORD>  # if JMX requires authentication
+```
+
+### 2. Metrics Whitelist:
+
+In the same configuration file, you might need to specify which JMX beans and attributes you want to fetch. For example, to get the commit rate, process rate, and some state store metrics, you'd have to specify the relevant MBeans.
+
+```yaml
+init_config:
+  conf:
+    - include:
+        domain: 'kafka.streams'
+        bean:
+          - 'kafka.streams:type=stream-metrics,client-id=<YOUR-CLIENT-ID>'
+        attribute:
+          - CommitRate
+          - ProcessRate
+          # Add other attributes/metrics you're interested in
+```
+
+Make sure to replace `<YOUR-CLIENT-ID>` with the appropriate client ID for your Kafka Streams application.
+
+### 3. Restart the Datadog Agent:
+
+After making these configurations, you'll need to restart the Datadog Agent for changes to take effect.
+
+### 4. Check in Datadog's Dashboard:
+
+Once the agent is correctly configured and restarted, you should start seeing the specified Kafka Streams metrics in your Datadog dashboard after a short while. You might need to customize or create specific dashboards or monitors in Datadog to visualize these metrics in the way you want.
+
+### Notes:
+
+- Always ensure your Kafka Streams application is exposing JMX metrics on the expected port and that there are no network/firewall issues preventing the Datadog Agent from accessing these metrics.
+- The exact MBean names and attributes can vary based on your Kafka version and setup, so you might need to adjust the configuration accordingly. 
+- Make sure to refer to the Datadog documentation or support if you encounter specific issues related to the Datadog setup.
